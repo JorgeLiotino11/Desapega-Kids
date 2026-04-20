@@ -5,7 +5,13 @@ const router = express.Router();
 
 /**
  * 📌 POST /api/auth/register
+<<<<<<< HEAD
  * Cria um novo usuário no Firestore após o registro no Firebase Authentication
+=======
+ * Recebe idToken, email, nome e uid do front (já criado via Firebase Client SDK)
+ * Verifica o token no Firebase Admin e salva dados adicionais no Firestore
+ * e cria uma sessão no Express.
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
  */
 router.post("/register", async (req, res) => {
   const { idToken, email, displayName, uid, photoBase64 } = req.body;
@@ -17,6 +23,7 @@ router.post("/register", async (req, res) => {
       return res.status(401).json({ error: "UID inválido" });
     }
 
+<<<<<<< HEAD
     // Monta os dados do novo usuário
     const userData = {
       email,
@@ -46,6 +53,35 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     console.error("❌ Erro ao registrar usuário:", error);
     res.status(400).json({ success: false, error: error.message });
+=======
+    // Salva dados adicionais do usuário no Firestore (se ainda não existir)
+    await db.collection("users").doc(uid).set(
+      {
+        email,
+        displayName,
+        createdAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    // Cria sessão do usuário
+    req.session.user = {
+      uid,
+      email,
+      displayName,
+      loginTime: new Date(),
+    };
+
+    console.log(`✅ Sessão criada para ${email} (registro)`);
+
+    res.status(201).json({
+      message: "Usuário registrado e logado com sucesso",
+      user: req.session.user,
+    });
+  } catch (error) {
+    console.error("❌ Erro no registro:", error);
+    res.status(400).json({ error: error.message });
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
   }
 });
 
@@ -58,11 +94,13 @@ router.post("/login", async (req, res) => {
   const { idToken, email, displayName, uid } = req.body;
 
   try {
+    // Verifica o token do Firebase
     const decodedToken = await auth.verifyIdToken(idToken);
     if (decodedToken.uid !== uid) {
       return res.status(401).json({ error: "UID inválido" });
     }
 
+<<<<<<< HEAD
     const userDoc = await db.collection("users").doc(uid).get();
     
     // Fallback para dados do token se o doc não existir
@@ -77,6 +115,23 @@ router.post("/login", async (req, res) => {
       email: userData.email || email,
       displayName: userData.displayName || displayName,
       photoURL: photoURL,
+=======
+    // Busca dados extras do Firestore
+    const userDoc = await db.collection("users").doc(uid).get();
+    const userData = userDoc.exists
+      ? userDoc.data()
+      : { email, displayName };
+
+    // foto de perfil também seja carregada
+    const photoURL = userData.photoURL || null;
+
+    // Cria a sessão com foto se tiver
+    req.session.user = {
+      uid,
+      email: userData.email,
+      displayName: userData.displayName,
+      photoURL, 
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
       loginTime: new Date(),
     };
 
@@ -121,6 +176,7 @@ router.get("/me", (req, res) => {
 });
 
 /**
+<<<<<<< HEAD
  * 📌 DELETE /api/auth/delete
  * Exclui a conta do usuário logado (Firebase Auth + Firestore + sessão)
  */
@@ -187,6 +243,10 @@ router.delete("/delete", async (req, res) => {
 /**
  * 📌 POST /api/auth/update
  * Atualiza nome e foto do usuário logado
+=======
+ * 📌 POST /api/auth/update
+ * Atualiza nome do usuário logado
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
  */
 router.post("/update", async (req, res) => {
   const { idToken, displayName, uid, photoBase64 } = req.body;
@@ -197,6 +257,7 @@ router.post("/update", async (req, res) => {
       return res.status(401).json({ error: "UID inválido" });
     }
 
+<<<<<<< HEAD
     // Preparar dados para atualização
     const updateData = {
       displayName,
@@ -209,11 +270,20 @@ router.post("/update", async (req, res) => {
     }
 
     // Atualiza no Firestore
+=======
+    // Atualiza no Firestore
+    const updateData = { displayName, updatedAt: new Date() };
+    if (photoBase64) {
+      updateData.photoURL = photoBase64; // salva imagem como base64
+    }
+
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
     await db.collection("users").doc(uid).set(updateData, { merge: true });
 
     // Atualiza sessão Express
     if (req.session.user) {
       req.session.user.displayName = displayName;
+<<<<<<< HEAD
       if (photoBase64) {
         req.session.user.photoURL = photoBase64;
       }
@@ -237,3 +307,17 @@ router.post("/update", async (req, res) => {
 });
 
 export default router;
+=======
+      if (photoBase64) req.session.user.photoURL = photoBase64;
+    }
+
+    console.log(`✅ Perfil atualizado: ${displayName}`);
+    res.json({ message: "Perfil atualizado com sucesso", photoURL: photoBase64 || null });
+  } catch (error) {
+    console.error("❌ Erro ao atualizar perfil:", error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+export default router;
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225

@@ -9,8 +9,12 @@
       <div id="perfilAlert"></div>
 
       <div class="bg-white p-4 rounded shadow-sm text-center">
+<<<<<<< HEAD
         
         <!-- Imagem de Perfil -->
+=======
+        <!-- Foto do usuário -->
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
         <img id="profileImage"
              src="{{#if user.photoURL}}{{user.photoURL}}{{else}}/img/default-avatar.png{{/if}}"
              class="rounded-circle mb-3 shadow-sm"
@@ -35,8 +39,19 @@
         <!-- Formulário de edição -->
         <form id="perfilForm" class="d-none mt-3 text-start">
           <div class="text-center mb-3">
+<<<<<<< HEAD
             <input type="file" id="photoInput" accept="image/*" class="form-control mt-2">
             <div class="form-text">Selecione uma nova foto (opcional)</div>
+=======
+            <img id="previewImage"
+                 src="{{#if user.photoURL}}{{user.photoURL}}{{else}}/img/default-avatar.png{{/if}}"
+                 class="rounded-circle mb-2 shadow-sm"
+                 style="width: 120px; height: 120px; object-fit: cover;">
+            <div>
+              <input type="file" id="photoInput" accept="image/*" class="form-control mt-2">
+              <div class="form-text">Selecione uma nova foto (opcional)</div>
+            </div>
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
           </div>
 
           <div class="mb-3">
@@ -50,7 +65,11 @@
             <div class="form-text">O email não pode ser alterado.</div>
           </div>
 
+<<<<<<< HEAD
           <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+=======
+          <div class="d-flex justify-content-between align-items-center mt-4">
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
             <div>
               <button type="submit" class="btn btn-success">
                 <span id="saveSpinner" class="spinner-border spinner-border-sm d-none me-2"></span>
@@ -60,11 +79,17 @@
                 Cancelar
               </button>
             </div>
+<<<<<<< HEAD
 
             <!-- 🗑️ Botão de excluir conta -->
             <button type="button" id="deleteAccountBtn" class="btn btn-danger">
               <i class="bi bi-trash-fill me-1"></i>Excluir conta
             </button>
+=======
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
           </div>
         </form>
       </div>
@@ -103,8 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveSpinner = document.getElementById('saveSpinner');
   const editBtn = document.getElementById('editBtn');
   const cancelEditBtn = document.getElementById('cancelEditBtn');
+<<<<<<< HEAD
   const deleteAccountBtn = document.getElementById('deleteAccountBtn');
   const photoInput = document.getElementById('photoInput');
+=======
+  const photoInput = document.getElementById('photoInput');
+  const previewImage = document.getElementById('previewImage');
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
   const profileImage = document.getElementById('profileImage');
   let photoBase64 = null;
 
@@ -122,18 +152,31 @@ document.addEventListener('DOMContentLoaded', () => {
     else saveSpinner.classList.add('d-none');
   }
 
+<<<<<<< HEAD
+=======
+  // Quando o usuário escolhe uma imagem
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
   photoInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
+<<<<<<< HEAD
         photoBase64 = event.target.result;
         profileImage.src = photoBase64;
+=======
+        photoBase64 = event.target.result; // string base64
+        previewImage.src = photoBase64;
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
       };
       reader.readAsDataURL(file);
     }
   });
 
+<<<<<<< HEAD
+=======
+  // Alterna visualização/edição
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
   editBtn?.addEventListener('click', () => {
     perfilView.classList.add('d-none');
     perfilForm.classList.remove('d-none');
@@ -142,17 +185,27 @@ document.addEventListener('DOMContentLoaded', () => {
   cancelEditBtn?.addEventListener('click', () => {
     perfilForm.classList.add('d-none');
     perfilView.classList.remove('d-none');
+<<<<<<< HEAD
     photoBase64 = null;
     photoInput.value = '';
   });
 
   firebase.auth().onAuthStateChanged((user) => {
     if (!user) {
+=======
+  });
+
+  // Autenticação Firebase
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+      console.warn("Usuário não autenticado no Firebase.");
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
       showAlert("Você precisa estar logado para editar o perfil.", "danger");
       editBtn.disabled = true;
       return;
     }
 
+<<<<<<< HEAD
     // 🧩 Excluir conta
 deleteAccountBtn?.addEventListener('click', async () => {
   if (!confirm("Tem certeza que deseja excluir sua conta? Esta ação é irreversível.")) return;
@@ -184,6 +237,9 @@ deleteAccountBtn?.addEventListener('click', async () => {
 
 
     // 🧩 Atualizar perfil
+=======
+    // Envio do formulário
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
     perfilForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       setLoading(true);
@@ -197,7 +253,11 @@ deleteAccountBtn?.addEventListener('click', async () => {
           idToken,
           displayName,
           uid: user.uid,
+<<<<<<< HEAD
           photoBase64: photoBase64
+=======
+          photoBase64: photoBase64 // envia string base64 se existir
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
         };
 
         const response = await fetch('/api/auth/update', {
@@ -209,8 +269,17 @@ deleteAccountBtn?.addEventListener('click', async () => {
         if (!response.ok) throw new Error('Erro ao salvar no servidor');
         const data = await response.json();
 
+<<<<<<< HEAD
         document.getElementById('viewName').textContent = displayName;
         if (data.photoURL) profileImage.src = data.photoURL;
+=======
+        // Atualiza interface
+        document.getElementById('viewName').textContent = displayName;
+        if (data.photoURL) {
+          profileImage.src = data.photoURL;
+          previewImage.src = data.photoURL;
+        }
+>>>>>>> 9e08b2f72065ca81cb60b7115099942962a1a225
 
         showAlert('Informações atualizadas com sucesso!', 'success');
         perfilForm.classList.add('d-none');

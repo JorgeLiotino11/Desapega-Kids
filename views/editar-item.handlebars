@@ -1,0 +1,129 @@
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="mb-4">
+                        <i class="bi bi-pencil-fill text-primary me-2"></i>
+                        Editar Item
+                    </h2>
+                    
+                    <form id="formEditarItem">
+                        <!-- Nome do item -->
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome do item *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   value="{{item.nome}}" required>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoria *</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option value="roupas" {{#if (eq item.categoria "roupas")}}selected{{/if}}>👕 Roupas</option>
+                                <option value="brinquedos" {{#if (eq item.categoria "brinquedos")}}selected{{/if}}>🎮 Brinquedos</option>
+                                <option value="livros" {{#if (eq item.categoria "livros")}}selected{{/if}}>📚 Livros</option>
+                                <option value="calcados" {{#if (eq item.categoria "calcados")}}selected{{/if}}>👟 Calçados</option>
+                                <option value="acessorios" {{#if (eq item.categoria "acessorios")}}selected{{/if}}>🎒 Acessórios</option>
+                                <option value="outros" {{#if (eq item.categoria "outros")}}selected{{/if}}>📦 Outros</option>
+                            </select>
+                        </div>
+
+                        <!-- Tamanho/Idade -->
+                        <div class="mb-3">
+                            <label for="tamanho" class="form-label">Tamanho/Idade recomendada</label>
+                            <input type="text" class="form-control" id="tamanho" name="tamanho"
+                                   value="{{item.tamanho}}">
+                        </div>
+
+                        <!-- Estado de conservação -->
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado de conservação *</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="novo" {{#if (eq item.estado "novo")}}selected{{/if}}>✨ Novo</option>
+                                <option value="seminovo" {{#if (eq item.estado "seminovo")}}selected{{/if}}>⭐ Seminovo</option>
+                                <option value="usado" {{#if (eq item.estado "usado")}}selected{{/if}}>👍 Usado</option>
+                            </select>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status *</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="disponivel" {{#if (eq item.status "disponivel")}}selected{{/if}}>✅ Disponível</option>
+                                <option value="reservado" {{#if (eq item.status "reservado")}}selected{{/if}}>⏳ Reservado</option>
+                                <option value="doado" {{#if (eq item.status "doado")}}selected{{/if}}>✔️ Doado</option>
+                            </select>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-4">
+                            <label for="descricao" class="form-label">Descrição *</label>
+                            <textarea class="form-control" id="descricao" name="descricao" 
+                                      rows="4" required>{{item.descricao}}</textarea>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Salvar Alterações
+                            </button>
+                            <a href="/item/{{item.id}}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('formEditarItem').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btnSubmit = document.getElementById('btnSubmit');
+    const originalText = btnSubmit.innerHTML;
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Salvando...';
+    
+    try {
+        const descricao = document.getElementById('descricao').value;
+        if (descricao.length < 20) {
+            throw new Error('A descrição deve ter no mínimo 20 caracteres');
+        }
+        
+        const response = await fetch('/api/itens/{{item.id}}', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nome: document.getElementById('nome').value,
+                categoria: document.getElementById('categoria').value,
+                tamanho: document.getElementById('tamanho').value,
+                estado: document.getElementById('estado').value,
+                status: document.getElementById('status').value,
+                descricao: descricao
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Item atualizado com sucesso!');
+            window.location.href = '/item/{{item.id}}';
+        } else {
+            throw new Error(data.message || 'Erro ao atualizar item');
+        }
+        
+    } catch (error) {
+        alert('Erro: ' + error.message);
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = originalText;
+    }
+});
+</script>

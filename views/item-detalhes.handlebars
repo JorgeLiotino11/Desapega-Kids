@@ -1,0 +1,232 @@
+<section class="container my-5">
+    <div class="row">
+        <!-- Galeria de imagens -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-body p-0">
+                    {{#if item.imagens.length}}
+                    <div id="carouselItem" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {{#each item.imagens}}
+                            <div class="carousel-item {{#if @first}}active{{/if}}">
+                                <img src="{{this}}" class="d-block w-100" alt="Imagem do item" 
+                                     style="height: 400px; object-fit: cover;">
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{#if item.imagens.length}}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselItem" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselItem" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                        {{/if}}
+                    </div>
+                    {{else}}
+                    <div class="bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 400px;">
+                        <i class="bi bi-image" style="font-size: 5rem; color: #ccc;"></i>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do item -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Status -->
+                    <div class="mb-3">
+                        {{#if (eq item.status "disponivel")}}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Disponível
+                        </span>
+                        {{else if (eq item.status "reservado")}}
+                        <span class="badge bg-warning">
+                            <i class="bi bi-clock me-1"></i>Reservado
+                        </span>
+                        {{else}}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Doado
+                        </span>
+                        {{/if}}
+                        
+                        <span class="badge bg-primary ms-2">{{item.categoria}}</span>
+                    </div>
+
+                    <!-- Título -->
+                    <h2 class="mb-3">{{item.nome}}</h2>
+
+                    <!-- Informações básicas -->
+                    <div class="mb-4">
+                        <div class="row g-3">
+                            {{#if item.tamanho}}
+                            <div class="col-6">
+                                <small class="text-muted d-block">Tamanho/Idade</small>
+                                <strong>{{item.tamanho}}</strong>
+                            </div>
+                            {{/if}}
+                            
+                            <div class="col-6">
+                                <small class="text-muted d-block">Estado</small>
+                                <strong>
+                                    {{#if (eq item.estado "novo")}}✨ Novo
+                                    {{else if (eq item.estado "seminovo")}}⭐ Seminovo
+                                    {{else}}👍 Usado{{/if}}
+                                </strong>
+                            </div>
+                            
+                            <div class="col-12">
+                                <small class="text-muted d-block">Publicado em</small>
+                                <strong>{{formatDate item.criadoEm}}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="mb-4">
+                        <h5 class="mb-2">Descrição</h5>
+                        <p class="text-muted">{{item.descricao}}</p>
+                    </div>
+
+                    <!-- Informações do doador -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="mb-2">
+                                <i class="bi bi-person-circle me-2"></i>
+                                Informações do doador
+                            </h6>
+                            <p class="mb-1"><strong>{{item.doadorNome}}</strong></p>
+                            <p class="mb-0 text-muted small">
+                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                Localização será compartilhada após contato
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Botões de ação -->
+                    {{#if user}}
+                        {{#if (eq user.uid item.doadorId)}}
+                        <!-- Botões para o próprio doador -->
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="/editar-item/{{item.id}}" class="btn btn-primary flex-fill">
+                                <i class="bi bi-pencil me-2"></i>Editar
+                            </a>
+                            <button class="btn btn-outline-danger flex-fill" onclick="deletarItem('{{item.id}}')">
+                                <i class="bi bi-trash me-2"></i>Excluir
+                            </button>
+                        </div>
+                        {{else}}
+                        <!-- Botões para interessados -->
+                        {{#if (eq item.status "disponivel")}}
+                        <button class="btn btn-success btn-lg w-100 mb-2" onclick="solicitarItem('{{item.id}}')">
+                            <i class="bi bi-hand-thumbs-up me-2"></i>
+                            Tenho interesse neste item
+                        </button>
+                        <p class="text-muted small text-center mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Você será conectado com o doador
+                        </p>
+                        {{else}}
+                        <button class="btn btn-secondary btn-lg w-100" disabled>
+                            <i class="bi bi-x-circle me-2"></i>
+                            Item não disponível
+                        </button>
+                        {{/if}}
+                        {{/if}}
+                    {{else}}
+                    <!-- Usuário não logado -->
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <a href="/login" class="alert-link">Faça login</a> para solicitar este item
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Itens relacionados -->
+    <div class="mt-5">
+        <h3 class="mb-4">Outros itens da categoria "{{item.categoria}}"</h3>
+        <div class="row" id="itensRelacionados">
+            <!-- Será preenchido via JavaScript -->
+        </div>
+    </div>
+</section>
+
+<script>
+function solicitarItem(itemId) {
+    if (confirm('Deseja solicitar este item? O doador será notificado do seu interesse.')) {
+        // Implementar lógica de solicitação
+        alert('Solicitação enviada! O doador entrará em contato em breve.');
+    }
+}
+
+function deletarItem(itemId) {
+    if (confirm('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.')) {
+        fetch(`/api/itens/${itemId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Item excluído com sucesso!');
+                window.location.href = '/meus-itens';
+            } else {
+                alert('Erro ao excluir item: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao excluir item');
+            console.error(error);
+        });
+    }
+}
+
+// Carregar itens relacionados
+async function carregarItensRelacionados() {
+    try {
+        const categoria = '{{item.categoria}}';
+        const itemId = '{{item.id}}';
+        
+        const response = await fetch(`/api/itens?categoria=${categoria}&status=disponivel`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const itens = data.itens.filter(item => item.id !== itemId).slice(0, 4);
+            const container = document.getElementById('itensRelacionados');
+            
+            if (itens.length === 0) {
+                container.innerHTML = '<p class="text-muted">Nenhum item relacionado encontrado.</p>';
+                return;
+            }
+            
+            container.innerHTML = itens.map(item => `
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 150px;">
+                            ${item.imagens && item.imagens.length > 0 
+                                ? `<img src="${item.imagens[0]}" style="width: 100%; height: 100%; object-fit: cover;">` 
+                                : '<i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>'}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">${item.nome}</h6>
+                            <p class="card-text text-muted small">${item.descricao.substring(0, 60)}...</p>
+                            <a href="/item/${item.id}" class="btn btn-primary btn-sm w-100">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar itens relacionados:', error);
+    }
+}
+
+// Carregar ao carregar a página
+document.addEventListener('DOMContentLoaded', carregarItensRelacionados);
+</script>

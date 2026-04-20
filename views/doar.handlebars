@@ -1,0 +1,217 @@
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="mb-4">
+                        <i class="bi bi-heart-fill text-warning me-2"></i>
+                        Cadastrar Item para Doação
+                    </h2>
+                    
+                    {{#if error}}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {{error}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {{/if}}
+
+                    {{#if success}}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        {{success}}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {{/if}}
+
+                    <form id="formDoarItem" enctype="multipart/form-data">
+                        <!-- Nome do item -->
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome do item *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required
+                                   placeholder="Ex: Vestido infantil rosa">
+                            <div class="form-text">Seja específico para ajudar na busca</div>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoria *</label>
+                            <select class="form-select" id="categoria" name="categoria" required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="roupas">👕 Roupas</option>
+                                <option value="brinquedos">🎮 Brinquedos</option>
+                                <option value="livros">📚 Livros</option>
+                                <option value="calcados">👟 Calçados</option>
+                                <option value="acessorios">🎒 Acessórios</option>
+                                <option value="outros">📦 Outros</option>
+                            </select>
+                        </div>
+
+                        <!-- Tamanho/Idade -->
+                        <div class="mb-3">
+                            <label for="tamanho" class="form-label">Tamanho/Idade recomendada</label>
+                            <input type="text" class="form-control" id="tamanho" name="tamanho"
+                                   placeholder="Ex: 4 anos, tamanho M, 28">
+                            <div class="form-text">Opcional - ajuda quem está procurando</div>
+                        </div>
+
+                        <!-- Estado de conservação -->
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado de conservação *</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="">Selecione o estado</option>
+                                <option value="novo">✨ Novo (nunca usado)</option>
+                                <option value="seminovo">⭐ Seminovo (pouco uso)</option>
+                                <option value="usado">👍 Usado (bom estado)</option>
+                            </select>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição *</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="4" required
+                                      placeholder="Descreva o item: cores, características, defeitos (se houver), etc."></textarea>
+                            <div class="form-text">Mínimo 20 caracteres</div>
+                        </div>
+
+                        <!-- Upload de imagens -->
+                        <div class="mb-4">
+                            <label for="imagens" class="form-label">Fotos do item</label>
+                            <input type="file" class="form-control" id="imagens" name="imagens" 
+                                   accept="image/*" multiple>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Você pode adicionar até 5 fotos (opcional)
+                            </div>
+                            <div id="preview-imagens" class="mt-3 d-flex gap-2 flex-wrap"></div>
+                        </div>
+
+                        <!-- Localização (será preenchida automaticamente do perfil do usuário) -->
+                        <div class="mb-4">
+                            <div class="alert alert-info">
+                                <i class="bi bi-geo-alt-fill me-2"></i>
+                                <strong>Localização:</strong> A localização será baseada no seu perfil.
+                                Você poderá ser contatado através da plataforma.
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmit">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Cadastrar Doação
+                            </button>
+                            <a href="/" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="card mt-4 bg-light border-0">
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+                        Dicas para uma boa doação
+                    </h5>
+                    <ul class="mb-0">
+                        <li>Tire fotos claras e bem iluminadas do item</li>
+                        <li>Seja honesto sobre o estado de conservação</li>
+                        <li>Descreva detalhes importantes (cores, tamanhos, defeitos)</li>
+                        <li>Responda rapidamente às solicitações</li>
+                        <li>Combine um local seguro para a entrega</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('imagens').addEventListener('change', function (e) {
+  const previewContainer = document.getElementById('preview-imagens');
+  previewContainer.innerHTML = '';
+
+  const files = Array.from(e.target.files).slice(0, 5);
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const div = document.createElement('div');
+      div.className = 'position-relative';
+      div.style.width = '100px';
+      div.style.height = '100px';
+
+      const img = document.createElement('img');
+      img.src = event.target.result;
+      img.className = 'img-thumbnail';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+
+      div.appendChild(img);
+      previewContainer.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+document.getElementById('formDoarItem').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const btnSubmit = document.getElementById('btnSubmit');
+  const originalText = btnSubmit.innerHTML;
+  btnSubmit.disabled = true;
+  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cadastrando...';
+
+  try {
+    const descricao = document.getElementById('descricao').value;
+    if (descricao.length < 20) throw new Error('A descrição deve ter no mínimo 20 caracteres');
+
+    // ⚙️ Converte imagens em Base64
+    const files = Array.from(document.getElementById('imagens').files).slice(0, 5);
+    const imagensBase64 = [];
+
+    for (const file of files) {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      imagensBase64.push(base64);
+    }
+
+    // 🔥 Envia os dados ao servidor
+    const response = await fetch('/api/itens', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: document.getElementById('nome').value,
+        categoria: document.getElementById('categoria').value,
+        tamanho: document.getElementById('tamanho').value,
+        estado: document.getElementById('estado').value,
+        descricao,
+        imagens: imagensBase64, // 👈 agora enviando de verdade
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert('Item cadastrado com sucesso! Redirecionando...');
+      window.location.href = '/meus-itens';
+    } else {
+      throw new Error(data.message || 'Erro ao cadastrar item');
+    }
+  } catch (error) {
+    alert('Erro: ' + error.message);
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.innerHTML = originalText;
+  }
+});
+</script>

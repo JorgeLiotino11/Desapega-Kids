@@ -1,0 +1,206 @@
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">
+    <i class="bi bi-person-circle me-2"></i>Meu Perfil
+  </h2>
+
+  {{#if user}}
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div id="perfilAlert"></div>
+
+      <div class="bg-white p-4 rounded shadow-sm text-center">
+        <!-- Foto do usuário -->
+        <img id="profileImage"
+             src="{{#if user.photoURL}}{{user.photoURL}}{{else}}/img/default-avatar.png{{/if}}"
+             class="rounded-circle mb-3 shadow-sm"
+             alt="Foto de perfil"
+             style="width: 120px; height: 120px; object-fit: cover;">
+
+        <!-- Visualização -->
+        <div id="perfilView">
+          <p><strong>Nome:</strong> <span id="viewName">{{user.displayName}}</span></p>
+          <p><strong>Email:</strong> <span id="viewEmail">{{user.email}}</span></p>
+
+          <div class="text-end mt-4">
+            <button id="editBtn" class="btn btn-primary">
+              <i class="bi bi-pencil-square me-1"></i>Editar perfil
+            </button>
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+        </div>
+
+        <!-- Formulário de edição -->
+        <form id="perfilForm" class="d-none mt-3 text-start">
+          <div class="text-center mb-3">
+            <img id="previewImage"
+                 src="{{#if user.photoURL}}{{user.photoURL}}{{else}}/img/default-avatar.png{{/if}}"
+                 class="rounded-circle mb-2 shadow-sm"
+                 style="width: 120px; height: 120px; object-fit: cover;">
+            <div>
+              <input type="file" id="photoInput" accept="image/*" class="form-control mt-2">
+              <div class="form-text">Selecione uma nova foto (opcional)</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="displayName" class="form-label">Nome completo</label>
+            <input type="text" id="displayName" class="form-control" value="{{user.displayName}}" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" value="{{user.email}}" readonly>
+            <div class="form-text">O email não pode ser alterado.</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+              <button type="submit" class="btn btn-success">
+                <span id="saveSpinner" class="spinner-border spinner-border-sm d-none me-2"></span>
+                Salvar alterações
+              </button>
+              <button type="button" id="cancelEditBtn" class="btn btn-outline-secondary ms-2">
+                Cancelar
+              </button>
+            </div>
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {{else}}
+  <div class="alert alert-warning text-center mt-5">
+    Você precisa estar logado para acessar esta página. <a href="/login" class="fw-semibold">Fazer login</a>
+  </div>
+  {{/if}}
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAl7UODazn1P_Y3bz1fG5c94z4nLvP2iDU",
+    authDomain: "desapega-kids.firebaseapp.com",
+    projectId: "desapega-kids",
+    storageBucket: "desapega-kids.firebasestorage.app",
+    messagingSenderId: "617286670076",
+    appId: "1:617286670076:web:dd859fff720c4fc6512979",
+    measurementId: "G-99FYXVZ13K"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const perfilForm = document.getElementById('perfilForm');
+  const perfilView = document.getElementById('perfilView');
+  const alertDiv = document.getElementById('perfilAlert');
+  const saveSpinner = document.getElementById('saveSpinner');
+  const editBtn = document.getElementById('editBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+  const photoInput = document.getElementById('photoInput');
+  const previewImage = document.getElementById('previewImage');
+  const profileImage = document.getElementById('profileImage');
+  let photoBase64 = null;
+
+  function showAlert(message, type = 'success') {
+    alertDiv.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show mt-3">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+  }
+
+  function setLoading(loading) {
+    if (loading) saveSpinner.classList.remove('d-none');
+    else saveSpinner.classList.add('d-none');
+  }
+
+  // Quando o usuário escolhe uma imagem
+  photoInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        photoBase64 = event.target.result; // string base64
+        previewImage.src = photoBase64;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Alterna visualização/edição
+  editBtn?.addEventListener('click', () => {
+    perfilView.classList.add('d-none');
+    perfilForm.classList.remove('d-none');
+  });
+
+  cancelEditBtn?.addEventListener('click', () => {
+    perfilForm.classList.add('d-none');
+    perfilView.classList.remove('d-none');
+  });
+
+  // Autenticação Firebase
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+      console.warn("Usuário não autenticado no Firebase.");
+      showAlert("Você precisa estar logado para editar o perfil.", "danger");
+      editBtn.disabled = true;
+      return;
+    }
+
+    // Envio do formulário
+    perfilForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setLoading(true);
+
+      const displayName = document.getElementById('displayName').value.trim();
+
+      try {
+        const idToken = await user.getIdToken();
+
+        const body = {
+          idToken,
+          displayName,
+          uid: user.uid,
+          photoBase64: photoBase64 // envia string base64 se existir
+        };
+
+        const response = await fetch('/api/auth/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) throw new Error('Erro ao salvar no servidor');
+        const data = await response.json();
+
+        // Atualiza interface
+        document.getElementById('viewName').textContent = displayName;
+        if (data.photoURL) {
+          profileImage.src = data.photoURL;
+          previewImage.src = data.photoURL;
+        }
+
+        showAlert('Informações atualizadas com sucesso!', 'success');
+        perfilForm.classList.add('d-none');
+        perfilView.classList.remove('d-none');
+      } catch (error) {
+        console.error(error);
+        showAlert('Erro ao atualizar perfil. Tente novamente.', 'danger');
+      } finally {
+        setLoading(false);
+      }
+    });
+  });
+});
+</script>

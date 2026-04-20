@@ -12,9 +12,15 @@
                     Uma plataforma segura e gratuita para fazer a diferença na vida das crianças.
                 </p>
                 <div class="d-flex gap-3 flex-wrap">
+                    {{#if user}}
                     <a href="/doar" class="btn btn-warning btn-lg">
                         <i class="bi bi-heart-fill me-2"></i>Quero Doar
                     </a>
+                    {{else}}
+                    <a href="/login" class="btn btn-warning btn-lg">
+                        <i class="bi bi-heart-fill me-2"></i>Quero Doar
+                    </a>
+                    {{/if}}
                     <a href="/buscar" class="btn btn-outline-light btn-lg">
                         <i class="bi bi-search me-2"></i>Buscar Itens
                     </a>
@@ -37,25 +43,25 @@
     <div class="row">
         <div class="col-lg-3 col-md-6">
             <div class="stats-card">
-                <div class="stats-number">1,234</div>
+                <div class="stats-number" id="stat-itens">0</div>
                 <p class="mb-0 text-muted">Itens doados</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="stats-card">
-                <div class="stats-number">567</div>
+                <div class="stats-number" id="stat-familias">0</div>
                 <p class="mb-0 text-muted">Famílias ajudadas</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="stats-card">
-                <div class="stats-number">890</div>
+                <div class="stats-number" id="stat-doadores">0</div>
                 <p class="mb-0 text-muted">Doadores ativos</p>
             </div>
         </div>
         <div class="col-lg-3 col-md-6">
             <div class="stats-card">
-                <div class="stats-number">15</div>
+                <div class="stats-number" id="stat-cidades">1</div>
                 <p class="mb-0 text-muted">Cidades atendidas</p>
             </div>
         </div>
@@ -68,8 +74,9 @@
         <div class="col-lg-8 text-center">
             <h2 class="mb-4">Encontre o que você precisa</h2>
             <div class="input-group mb-4" style="max-width: 500px; margin: 0 auto;">
-                <input type="text" class="form-control search-bar" placeholder="Buscar roupas, brinquedos, livros...">
-                <button class="btn btn-primary" type="button">
+                <input type="text" class="form-control search-bar" id="searchInput" 
+                       placeholder="Buscar roupas, brinquedos, livros...">
+                <button class="btn btn-primary" type="button" onclick="buscarRapido()">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
@@ -89,7 +96,7 @@
                     </div>
                     <h5 class="card-title">Roupas</h5>
                     <p class="card-text text-muted">Roupas para todas as idades e ocasiões</p>
-                    <a href="/categoria/roupas" class="btn btn-outline-primary">Ver itens</a>
+                    <a href="/buscar?categoria=roupas" class="btn btn-outline-primary">Ver itens</a>
                 </div>
             </div>
         </div>
@@ -102,7 +109,7 @@
                     </div>
                     <h5 class="card-title">Brinquedos</h5>
                     <p class="card-text text-muted">Brinquedos educativos e de diversão</p>
-                    <a href="/categoria/brinquedos" class="btn btn-outline-primary">Ver itens</a>
+                    <a href="/buscar?categoria=brinquedos" class="btn btn-outline-primary">Ver itens</a>
                 </div>
             </div>
         </div>
@@ -115,7 +122,7 @@
                     </div>
                     <h5 class="card-title">Livros</h5>
                     <p class="card-text text-muted">Livros infantis e educativos</p>
-                    <a href="/categoria/livros" class="btn btn-outline-primary">Ver itens</a>
+                    <a href="/buscar?categoria=livros" class="btn btn-outline-primary">Ver itens</a>
                 </div>
             </div>
         </div>
@@ -128,7 +135,7 @@
                     </div>
                     <h5 class="card-title">Acessórios</h5>
                     <p class="card-text text-muted">Mochilas, sapatos e acessórios</p>
-                    <a href="/categoria/acessorios" class="btn btn-outline-primary">Ver itens</a>
+                    <a href="/buscar?categoria=acessorios" class="btn btn-outline-primary">Ver itens</a>
                 </div>
             </div>
         </div>
@@ -180,84 +187,90 @@
 </section>
 
 <!-- Recent Items -->
+<!-- Recent Items -->
 <section class="container mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Itens recentes</h2>
-        <a href="/todos-itens" class="btn btn-outline-primary">Ver todos</a>
+        <a href="/buscar" class="btn btn-outline-primary">Ver todos</a>
     </div>
     
-    <div class="row">
-        <!-- Exemplo de item 1 -->
+    <div class="row" id="itensRecentes">
+        <!-- Itens genéricos enquanto carrega -->
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+            <div class="card h-100">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="bi bi-person-fill" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
                 </div>
                 <div class="card-body">
-                    <h6 class="card-title">Vestido infantil</h6>
-                    <p class="card-text text-muted small">Tamanho 4 anos, cor rosa</p>
+                    <span class="badge bg-primary mb-2">roupas</span>
+                    <h6 class="card-title">Roupas Infantis</h6>
+                    <p class="card-text text-muted small">Roupas em bom estado para crianças</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
-                            <i class="bi bi-geo-alt-fill"></i> São Paulo, SP
+                            <i class="bi bi-person-circle me-1"></i>Doador
                         </small>
-                        <a href="#" class="btn btn-primary btn-sm">Solicitar</a>
+                        <a href="/buscar?categoria=roupas" class="btn btn-primary btn-sm">Buscar</a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Exemplo de item 2 -->
+
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+            <div class="card h-100">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="bi bi-controller" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
                 </div>
                 <div class="card-body">
-                    <h6 class="card-title">Carrinho de brinquedo</h6>
-                    <p class="card-text text-muted small">Estado: muito bom</p>
+                    <span class="badge bg-success mb-2">brinquedos</span>
+                    <h6 class="card-title">Brinquedos Educativos</h6>
+                    <p class="card-text text-muted small">Brinquedos para diversão e aprendizado</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
-                            <i class="bi bi-geo-alt-fill"></i> Rio de Janeiro, RJ
+                            <i class="bi bi-person-circle me-1"></i>Doador
                         </small>
-                        <a href="#" class="btn btn-primary btn-sm">Solicitar</a>
+                        <a href="/buscar?categoria=brinquedos" class="btn btn-primary btn-sm">Buscar</a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Exemplo de item 3 -->
+
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+            <div class="card h-100">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="bi bi-book-fill" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
                 </div>
                 <div class="card-body">
-                    <h6 class="card-title">Livro: O Pequeno Príncipe</h6>
-                    <p class="card-text text-muted small">Estado: bom</p>
+                    <span class="badge bg-warning mb-2">livros</span>
+                    <h6 class="card-title">Livros Infantis</h6>
+                    <p class="card-text text-muted small">Livros educativos e de aventura</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
-                            <i class="bi bi-geo-alt-fill"></i> Belo Horizonte, MG
+                            <i class="bi bi-person-circle me-1"></i>Doador
                         </small>
-                        <a href="#" class="btn btn-primary btn-sm">Solicitar</a>
+                        <a href="/buscar?categoria=livros" class="btn btn-primary btn-sm">Buscar</a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Exemplo de item 4 -->
+
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+            <div class="card h-100">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                     style="height: 200px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <i class="bi bi-bag-fill" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
                 </div>
                 <div class="card-body">
-                    <h6 class="card-title">Tênis esportivo</h6>
-                    <p class="card-text text-muted small">Tamanho 28</p>
+                    <span class="badge bg-info mb-2">acessórios</span>
+                    <h6 class="card-title">Acessórios</h6>
+                    <p class="card-text text-muted small">Mochilas, sapatos e muito mais</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
-                            <i class="bi bi-geo-alt-fill"></i> Salvador, BA
+                            <i class="bi bi-person-circle me-1"></i>Doador
                         </small>
-                        <a href="#" class="btn btn-primary btn-sm">Solicitar</a>
+                        <a href="/buscar?categoria=acessorios" class="btn btn-primary btn-sm">Buscar</a>
                     </div>
                 </div>
             </div>
@@ -273,12 +286,149 @@
             Junte-se à nossa comunidade e ajude a transformar a vida de crianças através da generosidade
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
+            {{#if user}}
             <a href="/doar" class="btn btn-primary btn-lg">
                 <i class="bi bi-heart-fill me-2"></i>Começar a doar
             </a>
-            <a href="/como-funciona" class="btn btn-outline-primary btn-lg">
+            {{else}}
+            <a href="/login" class="btn btn-primary btn-lg">
+                <i class="bi bi-heart-fill me-2"></i>Começar a doar
+            </a>
+            {{/if}}
+            <a href="/sobre" class="btn btn-outline-primary btn-lg">
                 <i class="bi bi-info-circle me-2"></i>Saiba mais
             </a>
         </div>
     </div>
 </section>
+
+<script>
+// Função de busca rápida
+function buscarRapido() {
+    const termo = document.getElementById('searchInput').value;
+    if (termo.trim()) {
+        window.location.href = `/buscar?q=${encodeURIComponent(termo)}`;
+    } else {
+        window.location.href = '/buscar';
+    }
+}
+
+// Buscar ao pressionar Enter
+document.getElementById('searchInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') buscarRapido();
+});
+
+// Gradientes para as categorias
+const categoryGradients = {
+    'roupas': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'brinquedos': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'livros': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'calcados': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'acessorios': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'outros': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+};
+
+const categoryIcons = {
+    'roupas': 'bi-person-fill',
+    'brinquedos': 'bi-controller',
+    'livros': 'bi-book-fill',
+    'calcados': 'bi-shoe-heel',
+    'acessorios': 'bi-bag-fill',
+    'outros': 'bi-box-seam'
+};
+
+// Carregar itens recentes do Firebase
+async function carregarItensRecentes() {
+    try {
+        const response = await fetch('/api/itens?status=disponivel&limit=4');
+        const data = await response.json();
+        
+        // Se houver itens reais, substituir os genéricos
+        if (data.success && data.itens && data.itens.length > 0) {
+            const container = document.getElementById('itensRecentes');
+            
+            container.innerHTML = data.itens.map(item => {
+                const gradient = categoryGradients[item.categoria] || categoryGradients['outros'];
+                const icon = categoryIcons[item.categoria] || categoryIcons['outros'];
+                
+                return `
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                 style="height: 200px; cursor: pointer; ${item.imagens && item.imagens.length > 0 ? '' : 'background: ' + gradient + ';'}" 
+                                 onclick="window.location.href='/item/${item.id}'">
+                                ${item.imagens && item.imagens.length > 0 
+                                    ? `<img src="${item.imagens[0]}" style="width: 100%; height: 100%; object-fit: cover;" alt="${item.nome}">` 
+                                    : `<i class="bi ${icon}" style="font-size: 4rem; color: white; opacity: 0.5;"></i>`}
+                            </div>
+                            <div class="card-body">
+                                <span class="badge bg-primary mb-2">${item.categoria}</span>
+                                <h6 class="card-title">${item.nome}</h6>
+                                <p class="card-text text-muted small">${item.descricao.substring(0, 60)}${item.descricao.length > 60 ? '...' : ''}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-person-circle me-1"></i>${item.doadorNome || 'Doador'}
+                                    </small>
+                                    <a href="/item/${item.id}" class="btn btn-primary btn-sm">Ver</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        // Se não houver itens, manter os genéricos que já estão no HTML
+        
+    } catch (error) {
+        console.error('Erro ao carregar itens:', error);
+        // Manter itens genéricos em caso de erro
+    }
+}
+
+// Carregar estatísticas do Firebase
+async function carregarEstatisticas() {
+    try {
+        const response = await fetch('/api/itens/api/estatisticas');
+        const data = await response.json();
+        
+        if (data.success) {
+            animarNumero('stat-itens', data.totalItens || 0);
+            animarNumero('stat-familias', data.familiasAjudadas || 0);
+            animarNumero('stat-doadores', data.totalDoadores || 0);
+            animarNumero('stat-cidades', data.cidades || 1);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+        // Manter valores padrão (0) em caso de erro
+    }
+}
+
+// Função para animar números
+function animarNumero(elementId, valorFinal) {
+    const elemento = document.getElementById(elementId);
+    if (valorFinal === 0) {
+        elemento.textContent = '0';
+        return;
+    }
+    
+    const duracao = 1000;
+    const incremento = valorFinal / (duracao / 16);
+    let valorAtual = 0;
+    
+    const timer = setInterval(() => {
+        valorAtual += incremento;
+        if (valorAtual >= valorFinal) {
+            elemento.textContent = valorFinal.toLocaleString('pt-BR');
+            clearInterval(timer);
+        } else {
+            elemento.textContent = Math.floor(valorAtual).toLocaleString('pt-BR');
+        }
+    }, 16);
+}
+
+// Carregar dados ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+    carregarItensRecentes();
+    carregarEstatisticas();
+});
+</script>

@@ -1,0 +1,165 @@
+<section class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-box-seam me-2"></i>
+            Meus Itens Doados
+        </h2>
+        <a href="/doar" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>
+            Adicionar Item
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <select class="form-select" id="filtroStatus">
+                        <option value="">Todos os status</option>
+                        <option value="disponivel">Disponível</option>
+                        <option value="reservado">Reservado</option>
+                        <option value="doado">Doado</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="filtroCategoria">
+                        <option value="">Todas as categorias</option>
+                        <option value="roupas">Roupas</option>
+                        <option value="brinquedos">Brinquedos</option>
+                        <option value="livros">Livros</option>
+                        <option value="calcados">Calçados</option>
+                        <option value="acessorios">Acessórios</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary w-100" onclick="carregarMeusItens()">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de itens -->
+    <div id="listaItens">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+async function carregarMeusItens() {
+    const container = document.getElementById('listaItens');
+    container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+    
+    try {
+        const status = document.getElementById('filtroStatus').value;
+        const categoria = document.getElementById('filtroCategoria').value;
+        
+        let url = '/api/itens?doadorId={{user.uid}}';
+        if (status) url += `&status=${status}`;
+        if (categoria) url += `&categoria=${categoria}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message);
+        }
+        
+        if (data.itens.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">Nenhum item encontrado</p>
+                    <a href="/doar" class="btn btn-primary">Adicionar primeiro item</a>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="row">
+                ${data.itens.map(item => `
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                 style="height: 200px;">
+                                ${item.imagens && item.imagens.length > 0 
+                                    ? `<img src="${item.imagens[0]}" style="width: 100%; height: 100%; object-fit: cover;">` 
+                                    : '<i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>'}
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    ${item.status === 'disponivel' 
+                                        ? '<span class="badge bg-success">Disponível</span>'
+                                        : item.status === 'reservado'
+                                        ? '<span class="badge bg-warning">Reservado</span>'
+                                        : '<span class="badge bg-secondary">Doado</span>'}
+                                    <span class="badge bg-primary">${item.categoria}</span>
+                                </div>
+                                <h5 class="card-title">${item.nome}</h5>
+                                <p class="card-text text-muted small">${item.descricao.substring(0, 80)}...</p>
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    ${new Date(item.criadoEm).toLocaleDateString('pt-BR')}
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="/item/${item.id}" class="btn btn-outline-primary btn-sm flex-fill">
+                                        <i class="bi bi-eye me-1"></i>Ver
+                                    </a>
+                                    <a href="/editar-item/${item.id}" class="btn btn-outline-secondary btn-sm flex-fill">
+                                        <i class="bi bi-pencil me-1"></i>Editar
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deletarItem('${item.id}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Erro ao carregar itens:', error);
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Erro ao carregar itens. Tente novamente.
+            </div>
+        `;
+    }
+}
+
+async function deletarItem(itemId) {
+    if (!confirm('Tem certeza que deseja excluir este item?')) return;
+    
+    try {
+        const response = await fetch(`/api/itens/${itemId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Item excluído com sucesso!');
+            carregarMeusItens();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    } catch (error) {
+        alert('Erro ao excluir item');
+        console.error(error);
+    }
+}
+
+// Carregar itens ao iniciar
+document.addEventListener('DOMContentLoaded', carregarMeusItens);
+</script>

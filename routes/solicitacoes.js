@@ -335,19 +335,19 @@ router.post('/:id/confirmar-coleta', requireAuth, async (req, res) => {
             });
         }
 
-        // 1. Atualiza o status da solicitação
+        // 1️⃣ Atualiza o status da solicitação
         await solicitacaoRef.update({
             status: 'coletada',
             coletadoEm: new Date().toISOString()
         });
 
-        // 2. Atualiza o status do item para 'doado'
+        // 2️⃣ Atualiza o status do item para 'doado'
         await db.collection('itens').doc(solicitacao.itemId).update({
             status: 'doado',
             atualizadoEm: new Date().toISOString()
         });
 
-        // 3. Cancela todas as outras solicitações pendentes para o mesmo item
+        // 3️⃣ Cancela todas as outras solicitações pendentes para o mesmo item
         const outrasSolicitacoesSnapshot = await db.collection('solicitacoes')
             .where('itemId', '==', solicitacao.itemId)
             .where('status', '==', 'pendente')
@@ -361,7 +361,9 @@ router.post('/:id/confirmar-coleta', requireAuth, async (req, res) => {
             });
         });
         await batch.commit();
-        await updateGlobalCounter('itensDoados', 1);
+
+        // Linha removida (updateGlobalCounter)
+
         res.json({
             success: true,
             message: 'Coleta confirmada. Item marcado como doado.'
